@@ -2,6 +2,9 @@ using UnityEngine;
 
 public class player : MonoBehaviour
 {
+    public int DebugGrongundCheck = 0;
+
+
     /// <summary>
     /// 2D刚体组件，用于处理物理运动
     /// </summary>
@@ -25,7 +28,7 @@ public class player : MonoBehaviour
 
     [Header("Collision info")]
     [SerializeField]
-    [Tooltip("地面层掩码，用于判断地面")]
+    [Tooltip("控制台显示检测是否有地面")]
     private LayerMask groundLayer;
     [SerializeField]
     [Tooltip("地面检测距离")]
@@ -132,8 +135,22 @@ public class player : MonoBehaviour
         // 使用OverlapBox在下方区域检测是否与groundLayer相碰撞
         Collider2D[] colliders = Physics2D.OverlapBoxAll(checkCenter, checkSize, 0f, groundLayer);
 
+        //忽略玩家自身碰撞箱
+        colliders = System.Array.FindAll(colliders, col => col.gameObject != gameObject);
+
         // 如果检测到任何collider，说明接触到地面
         isGrounded = colliders.Length > 0;
+
+        //地板检测测试
+        if(DebugGrongundCheck > 0)
+        {
+            isGrounded = colliders.Length > 0;
+            Debug.Log($"地面检测到的碰撞体数量：{colliders.Length}，是否在地面：{isGrounded}");
+        }
+            
+        
+        
+
     }
 
     /// <summary>
@@ -228,4 +245,6 @@ public class player : MonoBehaviour
     {
         return woodCount >= backpackCapacity;
     }
+
+
 }
