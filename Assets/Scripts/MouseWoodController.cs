@@ -141,6 +141,9 @@ public class MouseWoodController : MonoBehaviour
                         // 重置旋转角度
                         currentWoodRotation = 0f;
                         CreateCursorVisual();
+                        // 更新UI显示
+                        if (WoodUIControler.IsInitialized)
+                            WoodUIControler.Instance.UpdateWoodUI(p.GetWoodCount());
                     }
                 }
                 else
@@ -151,6 +154,9 @@ public class MouseWoodController : MonoBehaviour
                     {
                         isHoldingWood = false;
                         DestroyCursorVisual();
+                        // 更新UI显示
+                        if (WoodUIControler.IsInitialized)
+                            WoodUIControler.Instance.UpdateWoodUI(p.GetWoodCount());
                     }
                     // 如果放回失败（背包满），不做处理
                 }
