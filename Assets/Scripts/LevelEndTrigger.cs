@@ -27,8 +27,8 @@ public class LevelEndTrigger : MonoBehaviour
         NextScenePlayerSpawnPosition = playerSpawnPosition;
 
         if (!string.IsNullOrEmpty(nextSceneName))
-            SceneManager.LoadScene(nextSceneName);
+            StartCoroutine(SceneLoader.Instance.LoadSceneAsync(nextSceneName));
         else
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+            StartCoroutine(SceneLoader.Instance.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex + 1));
     }
 }
