@@ -36,6 +36,9 @@ public class player : MonoBehaviour
     [SerializeField]
     [Tooltip("地面检测区域宽度")]
     private float groundCheckWidth = 0.8f;
+    [SerializeField]
+    [Tooltip("地面检测基准位置偏移")]
+    private Vector2 groundCheckOffset = Vector2.zero;
     /// <summary>
     /// 是否在地面上
     /// </summary>
@@ -95,7 +98,7 @@ public class player : MonoBehaviour
     private void OnDrawGizmos()
     {
         // 在Scene视图中绘制地面检测区域
-        Vector3 checkCenter = transform.position + Vector3.down * (groundCheckDistance / 2f);
+        Vector3 checkCenter = transform.position + new Vector3(groundCheckOffset.x, -groundCheckDistance / 2f + groundCheckOffset.y, 0f);
         Vector3 checkSize = new Vector3(groundCheckWidth, groundCheckDistance, 0f);
 
         // 绘制矩形框表示检测区域
@@ -155,7 +158,7 @@ public class player : MonoBehaviour
     private void GroundCheck()
     {
         // 计算检测区域的中心（玩家下方）
-        Vector3 checkCenter = transform.position + Vector3.down * (groundCheckDistance / 2f);
+        Vector3 checkCenter = transform.position + new Vector3(groundCheckOffset.x, -groundCheckDistance / 2f + groundCheckOffset.y, 0f);
         Vector3 checkSize = new Vector3(groundCheckWidth, groundCheckDistance, 0f);
 
         // 使用OverlapBox在下方区域检测是否与groundLayer相碰撞
@@ -173,7 +176,7 @@ public class player : MonoBehaviour
             isGrounded = colliders.Length > 0;
             Debug.Log($"地面检测到的碰撞体数量：{colliders.Length}，是否在地面：{isGrounded}");
         }
-            
+
         animator.SetBool(groundedParam, isGrounded);
 
     }

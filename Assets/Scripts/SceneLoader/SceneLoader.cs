@@ -1,0 +1,145 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
+public class SceneLoader : Globalizer<SceneLoader>
+{
+    [SerializeField] private Image fadeImage; // 黑色遮罩图片
+    [SerializeField] private float fadeDuration = 1f;
+
+    public Action<string> OnSceneLoad;
+
+    private void Start()
+    {
+        // 确保开始时遮罩是透明的
+        Color color = fadeImage.color;
+        color.a = 0f;
+        fadeImage.color = color;
+        fadeImage.enabled = false; // 初始禁用遮罩，只有在加载场景时才启用
+    }
+
+    public void LoadScene(string sceneName)
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+        OnSceneLoad?.Invoke(sceneName);
+    }
+
+    public void LoadScene(int sceneIndex)
+    {
+        if (sceneIndex < 0 || sceneIndex >= SceneManager.sceneCountInBuildSettings)
+        {
+            Debug.LogError("场景索引: " + sceneIndex + " 超出范围! 请确保索引有效。");
+            return;
+        }
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneIndex);
+        string scenePath = SceneUtility.GetScenePathByBuildIndex(sceneIndex);
+        string sceneName = Path.GetFileNameWithoutExtension(scenePath);
+        OnSceneLoad?.Invoke(sceneName);
+    }
+
+    public IEnumerator LoadSceneAsync(string sceneName)
+    {
+        fadeImage.enabled = true;
+
+        Debug.Log("正在检查场景: " + sceneName);
+        if (!IsSceneInBuildSettings(sceneName))
+        {
+            Debug.LogError("场景: " + sceneName + " 不在 Build Settings 中! 请确保它已被添加到 Build Settings 的场景列表中。");
+            yield break;
+        }
+        Debug.Log("场景: " + sceneName + " 已在 Build Settings 中，准备加载.");
+
+        Debug.Log("开始加载场景: " + sceneName);
+        yield return StartCoroutine(Fade(0f, 1f)); // 淡入黑色
+        yield return StartCoroutine(LoadSceneCoroutine(sceneName));
+    }
+
+    public IEnumerator LoadSceneAsync(int sceneIndex)
+    {
+        if (sceneIndex < 0 || sceneIndex >= SceneManager.sceneCountInBuildSettings)
+        {
+            Debug.LogError("场景索引: " + sceneIndex + " 超出范围! 请确保索引有效。");
+            yield break;
+        }
+
+        fadeImage.enabled = true;
+
+        string scenePath = SceneUtility.GetScenePathByBuildIndex(sceneIndex);
+        string sceneName = Path.GetFileNameWithoutExtension(scenePath);
+        Debug.Log("正在检查场景: " + sceneName);
+        Debug.Log("开始加载场景: " + sceneName);
+
+        yield return StartCoroutine(Fade(0f, 1f)); // 淡入黑色
+        yield return StartCoroutine(LoadSceneCoroutineByIndex(sceneIndex));
+    }
+
+    public bool IsSceneInBuildSettings(string sceneName)
+    {
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+        {
+            string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+            string name = Path.GetFileNameWithoutExtension(scenePath);
+
+            if (name == sceneName)
+                return true;
+        }
+        return false;
+    }
+
+    IEnumerator Fade(float startAlpha, float endAlpha)
+    {
+        float elapsedTime = 0f;
+        Color color = fadeImage.color;
+
+        while (elapsedTime < fadeDuration)
+        {
+            elapsedTime += Time.deltaTime;
+            color.a = Mathf.Lerp(startAlpha, endAlpha, elapsedTime / fadeDuration);
+            fadeImage.color = color;
+            yield return null;
+        }
+
+        color.a = endAlpha;
+        fadeImage.color = color;
+    }
+
+    IEnumerator LoadSceneCoroutine(string sceneName)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+
+        while (!asyncLoad.isDone)
+        {
+            // 获取加载进度 (0-0.9)
+            float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
+            Debug.Log($"Loading: {progress * 100}%");
+            yield return null;
+        }
+        OnSceneLoad?.Invoke(sceneName);
+        yield return StartCoroutine(Fade(1f, 0f)); // 淡出黑色
+        fadeImage.enabled = false;
+        Debug.Log("场景: " + sceneName + " 加载完成!");
+    }
+
+    IEnumerator LoadSceneCoroutineByIndex(int sceneIndex)
+    {
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneIndex);
+
+        while (!asyncLoad.isDone)
+        {
+            // 获取加载进度 (0-0.9)
+            float progress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
+            Debug.Log($"Loading: {progress * 100}%");
+            yield return null;
+        }
+        string scenePath = SceneUtility.GetScenePathByBuildIndex(sceneIndex);
+        string sceneName = Path.GetFileNameWithoutExtension(scenePath);
+        OnSceneLoad?.Invoke(sceneName);
+        yield return StartCoroutine(Fade(1f, 0f)); // 淡出黑色
+        fadeImage.enabled = false;
+        Debug.Log("场景: " + sceneName + " 加载完成!");
+    }
+}

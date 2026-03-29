@@ -141,6 +141,9 @@ public class MouseWoodController : MonoBehaviour
                         // 重置旋转角度
                         currentWoodRotation = 0f;
                         CreateCursorVisual();
+                        // 更新UI显示
+                        if (WoodUIControler.IsInitialized)
+                            WoodUIControler.Instance.UpdateWoodUI(p.GetWoodCount());
                     }
                 }
                 else
@@ -151,6 +154,9 @@ public class MouseWoodController : MonoBehaviour
                     {
                         isHoldingWood = false;
                         DestroyCursorVisual();
+                        // 更新UI显示
+                        if (WoodUIControler.IsInitialized)
+                            WoodUIControler.Instance.UpdateWoodUI(p.GetWoodCount());
                     }
                     // 如果放回失败（背包满），不做处理
                 }
@@ -297,7 +303,7 @@ public class MouseWoodController : MonoBehaviour
             if (collider.GetComponent<Checkpoint>() != null) continue;
 
             // 如果有其他Rigidbody2D，说明会与动态物体发生物理冲突
-            Rigidbody2D rb = collider.GetComponent<Rigidbody2D>();
+            Collider2D rb = collider.GetComponent<Collider2D>();
             if (rb != null)
                 return true;
         }

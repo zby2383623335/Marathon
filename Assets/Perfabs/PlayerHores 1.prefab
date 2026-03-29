@@ -107,8 +107,9 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
-  groundCheckDistance: -0.24
-  groundCheckWidth: 0.76
+  groundCheckDistance: 0.05
+  groundCheckWidth: 0.45
+  groundCheckOffset: {x: 0, y: 0.23}
   backpackCapacity: 4
   woodCount: 4
   moveSpeedRateWhenFull: 0.5
@@ -162,7 +163,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.023742676, y: 3.2871006}
+  m_Offset: {x: 0.023742676, y: 3.2}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
@@ -187,7 +188,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 0.2
   m_LinearDrag: 0
   m_AngularDrag: 0.01
   m_GravityScale: 2
