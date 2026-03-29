@@ -46,7 +46,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _EnableExternalAlpha: 0
-    - _FlowSpeed: 0.5
+    - _FlowSpeed: 0.4
     - _FlowTiling: 2
     - _SecondaryStrength: 0.5
     m_Colors:
