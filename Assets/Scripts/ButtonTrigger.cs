@@ -6,26 +6,23 @@ public class ButtonTrigger : MonoBehaviour
     public UnityEvent onPressed;
     public UnityEvent onReleased;
 
-    /// <summary>
-    /// 记录按压在按钮上的木头数量，用于支持多个木头同时压在按钮上
-    /// </summary>
-    private int woodCount = 0;
+    // 标记按钮是否已经被触发过一次（按下一次后保持触发状态）
+    private bool triggered = false;
 
-    private void OnTriggerEnter2D(Collider2D other)
+    // 使用普通碰撞检测（非 Trigger）来检测木头压下按钮
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (other.CompareTag("Wood"))
+        var other = collision.collider;
+        if (other != null && other.CompareTag("Wood") && !triggered)
         {
-            woodCount++;
-            if (woodCount == 1) onPressed?.Invoke(); //只有当 woodCount 从 0 变为 1 时才调用 onPressed（即“第一次被压下”）
+            triggered = true;
+            onPressed?.Invoke(); // 第一次被按下时触发一次，并保持状态
         }
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    private void OnCollisionExit2D(Collision2D collision)
     {
-        if (other.CompareTag("Wood"))
-        {
-            woodCount = Mathf.Max(0, woodCount - 1);
-            if (woodCount == 0) onReleased?.Invoke(); //只有当 woodCount 从 1 变为 0 时才调用 onReleased（即“最后一根离开”）
-        }
+        // 不再在离开时触发恢复，按钮按下后保持触发状态
+        // 保留该方法以便未来扩展
     }
 }

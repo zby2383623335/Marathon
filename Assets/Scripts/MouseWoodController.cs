@@ -303,7 +303,7 @@ public class MouseWoodController : MonoBehaviour
             if (collider.GetComponent<Checkpoint>() != null) continue;
 
             // 如果有其他Rigidbody2D，说明会与动态物体发生物理冲突
-            Rigidbody2D rb = collider.GetComponent<Rigidbody2D>();
+            Collider2D rb = collider.GetComponent<Collider2D>();
             if (rb != null)
                 return true;
         }
