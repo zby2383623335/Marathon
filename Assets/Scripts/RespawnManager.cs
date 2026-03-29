@@ -6,7 +6,6 @@ public class RespawnManager : MonoBehaviour
     public static RespawnManager Instance { get; private set; }
 
     private Vector3 respawnPosition;
-    private int respawnWoodCount = 0;
     private bool hasCheckpoint = false;
 
 /// <summary>
@@ -70,10 +69,9 @@ public class RespawnManager : MonoBehaviour
         }
     }
 
-    public void SetCheckpoint(Vector3 worldPosition, int woodCount)
+    public void SetCheckpoint(Vector3 worldPosition)
     {
         respawnPosition = worldPosition;
-        respawnWoodCount = woodCount;
         hasCheckpoint = true;
     }
 
@@ -128,18 +126,20 @@ public class RespawnManager : MonoBehaviour
 
         if (pComp != null)
         {
+            // 复活时固定持有 4 根木头
+            const int targetWoodCount = 4;
             int current = pComp.GetWoodCount();
-            if (respawnWoodCount > current)
+            if (targetWoodCount > current)
             {
-                int toAdd = respawnWoodCount - current;
+                int toAdd = targetWoodCount - current;
                 for (int i = 0; i < toAdd; i++)
                 {
                     if (!pComp.AddWood()) break;
                 }
             }
-            else if (respawnWoodCount < current)
+            else if (targetWoodCount < current)
             {
-                int toRemove = current - respawnWoodCount;
+                int toRemove = current - targetWoodCount;
                 for (int i = 0; i < toRemove; i++)
                 {
                     if (!pComp.PickWood()) break;

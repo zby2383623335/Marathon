@@ -19,10 +19,10 @@ public class Checkpoint : MonoBehaviour
         var p = other.GetComponentInParent<player>();
         if (p != null)
         {
-            // 设为当前重生点
+            // 设为当前重生点（不再记录木头数量）
             Vector3 respPos = transform.position;
-            RespawnManager.Instance?.SetCheckpoint(respPos, p.GetWoodCount());
-            Debug.Log($"Checkpoint set at {respPos} with wood {p.GetWoodCount()}");
+            RespawnManager.Instance?.SetCheckpoint(respPos);
+            Debug.Log($"Checkpoint set at {respPos}");
         }
     }
 
@@ -33,7 +33,7 @@ public class Checkpoint : MonoBehaviour
         if (p != null)
         {
             Vector3 respPos = transform.position;
-            RespawnManager.Instance?.SetCheckpoint(respPos, p.GetWoodCount());
+            RespawnManager.Instance?.SetCheckpoint(respPos);
         }
     }
 }

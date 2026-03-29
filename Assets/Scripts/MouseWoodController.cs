@@ -103,11 +103,31 @@ public class MouseWoodController : MonoBehaviour
         Vector2 worldPos = worldPos3;
 
         // 先检测是否点击到带 Collider2D 的物体（例如 player）
-        Collider2D hit = Physics2D.OverlapPoint(worldPos);
+        Collider2D[] hits = Physics2D.OverlapPointAll(worldPos);
+        Collider2D hit = null;
+        player p = null;
+        if (hits != null && hits.Length > 0)
+        {
+            // 优先找到属于 player 的 collider，避免 checkpoint/其他 trigger 覆盖玩家点击
+            foreach (var h in hits)
+            {
+                p = h.GetComponentInParent<player>();
+                if (p != null)
+                {
+                    hit = h;
+                    break;
+                }
+            }
+
+            // 若没有命中 player，则使用第一个命中的 collider
+            if (hit == null)
+                hit = hits[0];
+        }
+
         if (hit != null)
         {
             // 如果点击到 player
-            player p = hit.GetComponentInParent<player>();
+            p = hit.GetComponentInParent<player>();
             if (p != null)
             {
                 if (!isHoldingWood)
@@ -258,9 +278,11 @@ public class MouseWoodController : MonoBehaviour
             polySource.offset = polyTarget.offset;
         }
 
-        // 使用OverlapCollider检测是否有碰撞
+        // 使用OverlapCollider检测是否有碰撞，忽略触发器（例如检查点）或带有 Checkpoint 组件的碰撞体
         Collider2D[] colliders = new Collider2D[10];
-        int colliderCount = Physics2D.OverlapCollider(tempCollider, new ContactFilter2D().NoFilter(), colliders);
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.useTriggers = true; // we still collect triggers but will ignore checkpoints explicitly
+        int colliderCount = Physics2D.OverlapCollider(tempCollider, filter, colliders);
 
         // 清理临时对象
         Destroy(tempCheckObject);
@@ -269,8 +291,12 @@ public class MouseWoodController : MonoBehaviour
         for (int i = 0; i < colliderCount; i++)
         {
             Collider2D collider = colliders[i];
+            if (collider == null) continue;
 
-            // 如果有其他Rigidbody2D，说明有碰撞
+            // 忽略检查点触发器对放置判断的影响
+            if (collider.GetComponent<Checkpoint>() != null) continue;
+
+            // 如果有其他Rigidbody2D，说明会与动态物体发生物理冲突
             Rigidbody2D rb = collider.GetComponent<Rigidbody2D>();
             if (rb != null)
                 return true;
@@ -330,13 +356,15 @@ public class MouseWoodController : MonoBehaviour
     /// <returns>如果指向玩家返回true，否则返回false</returns>
     private bool IsPointingAtPlayer(Vector3 worldPos)
     {
-        // 使用OverlapPoint检测鼠标位置是否与玩家碰撞体重合
-        Collider2D hit = Physics2D.OverlapPoint(worldPos);
-        if (hit != null)
+        // 使用OverlapPointAll优先查找玩家的碰撞体，避免被检查点等触发器遮挡
+        Collider2D[] hits = Physics2D.OverlapPointAll(worldPos);
+        if (hits != null && hits.Length > 0)
         {
-            // 检查是否击中了玩家
-            player p = hit.GetComponentInParent<player>();
-            return p != null;
+            foreach (var h in hits)
+            {
+                var p = h.GetComponentInParent<player>();
+                if (p != null) return true;
+            }
         }
 
         return false;
