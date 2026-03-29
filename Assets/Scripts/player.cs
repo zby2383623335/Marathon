@@ -209,10 +209,6 @@ public class player : MonoBehaviour
             // 触发到达顶点的动画
             animator.SetTrigger(reachTheTopTrigger);
         }
-        else
-        {
-            animator.ResetTrigger(reachTheTopTrigger);
-        }
     }
     /// <summary>
     /// 根据速度方向控制角色翻转
