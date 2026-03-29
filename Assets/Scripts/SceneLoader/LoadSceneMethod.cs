@@ -1,24 +1,86 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class LoadSceneMethod : MonoBehaviour
 {
-    [Header("独立场景加载脚本：在下方填写目标场景的名字")]
-    [SerializeField] private string sceneName;
+    [SerializeField]
+    [Tooltip("要加载的下一个场景索引")]
+    private int nextSceneIndex = 1;
+    [SerializeField]
+    [Tooltip("是否自动计算当前场景的下一个场景索引")]
+    private bool autoLoadNextScene = true;
+    [SerializeField]
+    [Tooltip("是否在AnimController播完后自动加载场景")]
+    private bool loadSceneAfterAnimation = true;
 
-    public void LoadCertainScene()
+    /// <summary>
+    /// 动画控制器引用
+    /// </summary>
+    private AnimController animController;
+
+    void Start()
     {
-        if (SceneLoader.Instance != null)
+        // 如果启用了自动计算下一个场景索引
+        if (autoLoadNextScene)
         {
-            StartCoroutine(SceneLoader.Instance.LoadSceneAsync(sceneName));
+            int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+            nextSceneIndex = currentSceneIndex + 1;
+            Debug.Log($"当前场景索引: {currentSceneIndex}，自动设置下一个场景索引为: {nextSceneIndex}");
         }
-        else
+
+        // 获取动画控制器
+        animController = GetComponent<AnimController>();
+        if (animController == null)
         {
-            Debug.LogError("场景加载器(SceneLoader)实例未找到，现采用替代方法加载地图。");
-            UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+            animController = FindObjectOfType<AnimController>();
         }
+
+        // 如果启用了动画后自动加载场景，则订阅事件
+        if (loadSceneAfterAnimation && animController != null)
+        {
+            animController.onPlaybackComplete += OnAnimationComplete;
+        }
+    }
+
+    void OnDestroy()
+    {
+        // 取消订阅，防止内存泄漏
+        if (animController != null)
+        {
+            animController.onPlaybackComplete -= OnAnimationComplete;
+        }
+    }
+
+    /// <summary>
+    /// 动画播放完成回调
+    /// </summary>
+    private void OnAnimationComplete()
+    {
+        Debug.Log("动画播放完成，准备加载下一场景");
+        LoadNextScene();
+    }
+
+    /// <summary>
+    /// 加载下一个场景
+    /// </summary>
+    public void LoadNextScene()
+    {
+        if (!SceneLoader.IsInitialized)
+        {
+            Debug.LogError("SceneLoader 未初始化!");
+            return;
+        }
+
+        StartCoroutine(SceneLoader.Instance.LoadSceneAsync(nextSceneIndex));
+    }
+
+    /// <summary>
+    /// 手动设置场景索引并加载
+    /// </summary>
+    public void LoadScene(int sceneIndex)
+    {
+        nextSceneIndex = sceneIndex;
+        LoadNextScene();
     }
 }
